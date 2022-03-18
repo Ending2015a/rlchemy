@@ -112,7 +112,7 @@ class DiagGaussianPolicyNet(DelayedModule):
     in_dim = input_shape[-1]
     out_dim = int(np.prod(self.action_space.shape))
     self._mean_model = self.make_mean_model(in_dim, out_dim)
-    self._std_model = self.make_logstd_model(in_dim, out_dim)
+    self._logstd_model = self.make_logstd_model(in_dim, out_dim)
     self.input_dim = in_dim
     self.output_dim = out_dim
     self.mark_as_built()

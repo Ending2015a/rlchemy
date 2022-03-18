@@ -86,7 +86,7 @@ class Swish(DelayedModule):
   def forward(self, x: torch.Tensor) -> torch.Tensor:
     return swish(x, self.beta)
 
-class Activ(nn.Module):
+class Activ(DelayedModule):
   def __init__(
     self,
     dim: Optional[int] = None,

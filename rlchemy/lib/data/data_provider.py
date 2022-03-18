@@ -17,4 +17,4 @@ class BatchProvider(IterableDataset):
     self.generate_batch_fn = generate_batch_fn
 
   def __iter__(self) -> Iterator:
-    return self.generate_batch_fn
+    return self.generate_batch_fn()

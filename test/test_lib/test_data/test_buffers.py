@@ -308,7 +308,7 @@ class TestDataBuffersModule(TestCase):
 
   def test_replay_buffer_exception(self):
     buf = rl_buffers.ReplayBuffer(1, 1)
-    self.assertEqual([], buf.keys())
+    self.assertEqual([], list(buf.keys()))
     self.assertFalse('k' in buf)
     with self.assertRaises(AssertionError):
       buf.add(a=[1])

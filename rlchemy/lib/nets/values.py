@@ -114,6 +114,7 @@ class MultiHeadValueNets(DelayedModule):
   ):
     if isinstance(input_shapes, torch.Size):
       input_shapes = tuple([input_shapes] * self.n_heads)
+    out_dims = self.out_dims
     if not isinstance(out_dims, collections.Iterable):
       out_dims = tuple([out_dims] * self.n_heads)
     

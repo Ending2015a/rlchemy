@@ -21,6 +21,7 @@ __all__ = [
   'spaces',
   'StateObject',
   'is_image_space',
+  'is_batch_sample',
   'flatten_dicts',
   'is_bounded',
   'safe_makedirs',

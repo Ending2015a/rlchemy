@@ -72,22 +72,14 @@ class Runner():
     if states is not None:
       _, next_states = self.agent.predict(
         obs,
-        states,
-        masks,
+        states = states,
+        masks = masks,
         proc_act = False,
         det = False
       )
     else:
       next_states = None
-    # TODO: change this to self.agent.rev_proc_act(act)
-    rawact = rl.utils.normalize(
-      act,
-      low = self.env.action_space.low,
-      high = self.env.action_space.high,
-      nlow = -1.0,
-      nhigh = 1.0
-    )
-    return act, rawact, next_states
+    return act, None
 
   def _sample_predicted_actions_and_states(self):
     assert self._cached_obs is not None, \
@@ -95,22 +87,14 @@ class Runner():
     obs = self._cached_obs
     states = self._cached_states
     masks = self._cached_masks
-    rawact, next_states = self.agent.predict(
+    act = self.agent.predict(
       obs,
-      states,
-      masks,
+      states = states,
+      masks = masks,
       proc_act = False,
       det = False
     )
-    # change this to self.agent.proc_act(rawact)
-    act = rl.utils.denormalize(
-      rawact,
-      low = self.action_space.low,
-      high = self.action_space.high,
-      nlow = -1.0,
-      nhigh = 1.0
-    )
-    return act, rawact, next_states
+    return act, None
 
   def _collect_step(self, random: bool=False):
     # TODO: you can customize this function in your agent.
@@ -118,16 +102,16 @@ class Runner():
     states = self._cached_states
     masks = self._cached_masks
     if random:
-      act, rawact, next_states = \
+      act, next_states = \
         self._sample_random_actions_and_states()
     else:
-      act, rawact, next_states = \
-        self._sample_random_actions_and_states()
+      act, next_states = \
+        self._sample_predicted_actions_and_states()
     # step environment
     next_obs, rew, done, info = self.env.step(act)
     one_sample = dict(
       obs = obs,
-      act = rawact,
+      act = act,
       done = done,
       rew = rew
     )
@@ -171,15 +155,33 @@ class Runner():
     self._cached_rollout = (next_obs, rew, done, info)
     return next_obs, rew, done, info
 
-  def get_log_dict(self):
+  def log_dict(self, agent, scope=''):
     # TODO future: get those values from Monitor
     # also we disable this function if Monitor is not
     # attached to the env
-    return {
-      'last_episode_rewards': self.last_n_rewards[-1],
-      'last_episode_length': self.last_n_lengths[-1],
-      'avg_episode_rewards': np.mean(self.last_n_rewards),
-      'avg_episode_length': np.mean(self.last_n_lengths),
-      'completed_episodes': self.completed_episodes
-    }
+    name_op = lambda x: '/'.join(filter(None, [scope, x]))
+    agent.log_dict(
+      {
+        name_op('avg_episode_rewards'): np.mean(self.last_n_rewards),
+        name_op('avg_episode_length'): np.mean(self.last_n_lengths),
+      },
+      reduce_fx = 'mean',
+      sync_dist = True
+    )
+    agent.log_dict(
+      {
+        name_op('last_episode_rewards'): self.last_n_rewards[-1],
+        name_op('last_episode_length'): self.last_n_lengths[-1],
+      },
+      reduce_fx = 'max',
+      sync_dist = True
+    )
+    agent.log_dict(
+      {
+        name_op('completed_episodes'): self.completed_episodes,
+        name_op('total_timesteps'): self.total_timesteps
+      },
+      reduce_fx = 'sum',
+      sync_dist = True
+    )
 

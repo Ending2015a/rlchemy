@@ -13,6 +13,7 @@ from torch import nn
 import numpy as np
 # --- my module ---
 from rlchemy.lib.utils import common as rl_common
+from rlchemy.lib.utils import nest as rl_nest
 
 __all__ = [
   'set_seed',
@@ -22,7 +23,8 @@ __all__ = [
   'normalize',
   'denormalize',
   'preprocess_obs',
-  'soft_update'
+  'soft_update',
+  'input_tensor'
 ]
 
 def set_seed(seed):
@@ -200,4 +202,35 @@ def soft_update(
   with torch.no_grad():
     for tar, src in zip(target_vars, source_vars):
       tar.data.mul_(1 - tau)
-      torch.add(tar.data, src.data, alpha=true, out=tar.data)
+      torch.add(tar.data, src.data, alpha=tau, out=tar.data)
+
+def input_tensor(space=None, shape=None, batch_size=1, dtype=None):
+    """Create zero tensors either from
+    1. `space` if it's given. In this case, the `shape` is ignored. If `dtype`
+        is not provided, use `space.dtype`.
+    2. `shape` if `space` is not given. `dtype` defaults to `torch.float32`.
+
+    Args:
+        space (gym.Space): gym space. support nested type (Dict, Tuple).
+        shape (list, tuple, optional): shape of zero tensors to create.
+            Defaults to None.
+        batch_size (int, optional): size of batch dim. Defaults to 1.
+        dtype (torch.dtype, optional): tensor type. Defaults to None.
+
+    Returns:
+        torch.Tensor: zero tensors.
+    """
+    if space is not None:
+        # create tensors from the given space.
+        _tensor_op = lambda sp: (to_tensor(
+          np.zeros(
+            (batch_size, *sp.shape),
+            dtype=sp.dtype
+          ), dtype=dtype
+        )) # ignored if dtype is None.
+        return rl_nest.map_nested_space(space, _tensor_op)
+    else:
+        # create tensors from the given shape and dtype.
+        assert isinstance(shape, (list, tuple, torch.Size))
+        dtype = dtype or torch.float32
+        return to_tensor(np.zeros((batch_size, *shape)), dtype=dtype)

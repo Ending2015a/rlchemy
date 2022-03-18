@@ -204,7 +204,7 @@ class AwesomeNet(DelayedModule):
 
   def build(
     self,
-    input_shapes: Union[Tuple[gym.spaces.Spaces], Tuple[torch.Size]]
+    input_shapes: Union[Tuple[gym.spaces.Space], Tuple[torch.Size]]
   ):
     assert len(input_shapes) > 0
     for shape in input_shapes:
