@@ -4,6 +4,7 @@ from .lib import nets
 from .lib import prob
 from .lib import loss
 from .lib import utils
+from .lib import registry
 
 __copyright__ = """
  The MIT License (MIT)
