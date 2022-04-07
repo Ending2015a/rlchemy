@@ -1,6 +1,6 @@
 # RLchemy
 
-Configuration-based Deep Reinforcement Learning codebase based on [Pytorch Lightning](https://www.pytorchlightning.ai/).
+Personal Deep Reinforcement Learning atelier based on [Pytorch Lightning](https://www.pytorchlightning.ai/) for finding and testing new RL algorithms.
 
 Install command:
 ```
